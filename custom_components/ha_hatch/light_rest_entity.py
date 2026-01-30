@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
+    ATTR_EFFECT,
     ATTR_RGB_COLOR,
     ColorMode,
     LightEntity,
+    LightEntityFeature,
 )
 from logging import getLogger
 
@@ -13,10 +15,14 @@ from .hatch_entity import HatchEntity
 
 _LOGGER = getLogger(__name__)
 
+EFFECT_RAINBOW = "Rainbow"
+
 
 class LightRestEntity(HatchEntity, LightEntity):
     _attr_color_mode = ColorMode.RGB
     _attr_supported_color_modes = {ColorMode.RGB}
+    _attr_supported_features = LightEntityFeature.EFFECT
+    _attr_effect_list = [EFFECT_RAINBOW]
 
     def __init__(self, coordinator: HatchDataUpdateCoordinator, thing_name: str, config_turn_on_light: bool):
         super().__init__(coordinator=coordinator, thing_name=thing_name, entity_type="Light")
@@ -38,6 +44,12 @@ class LightRestEntity(HatchEntity, LightEntity):
             self.rest_device.blue,
         )
 
+    @property
+    def effect(self) -> str | None:
+        if self.rest_device.color_random:
+            return EFFECT_RAINBOW
+        return None
+
     def turn_on(self, **kwargs):
         _LOGGER.debug(f"args:{kwargs}")
         if ATTR_BRIGHTNESS in kwargs:
@@ -48,8 +60,15 @@ class LightRestEntity(HatchEntity, LightEntity):
             brightness = round(self.brightness * 100 / 255.0)
         rgb = kwargs.get(ATTR_RGB_COLOR, self.rgb_color)
 
-        _LOGGER.debug(f"turning on light to {rgb} with {brightness}")
-        self.rest_device.set_color(rgb[0], rgb[1], rgb[2], brightness)
+        # Handle effect parameter for rainbow mode
+        if ATTR_EFFECT in kwargs:
+            random_mode = kwargs[ATTR_EFFECT] == EFFECT_RAINBOW
+        else:
+            # Keep current random state if effect not specified
+            random_mode = self.rest_device.color_random
+
+        _LOGGER.debug(f"turning on light to {rgb} with {brightness}, random={random_mode}")
+        self.rest_device.set_color(rgb[0], rgb[1], rgb[2], brightness, random=random_mode)
         if self.config_turn_on_light:
             _LOGGER.debug("auto turning on the hatch power switch for the light")
             self.rest_device.set_on(True)
