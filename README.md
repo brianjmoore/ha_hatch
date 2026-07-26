@@ -26,6 +26,7 @@ A custom integration for Hatch Rest/Restore Sound Machines. This project is most
 - adjust the volume
 - monitor battery level (Rest+ & Rest+ 2nd gen)
 - adjust light brightness and color
+- "Rainbow" light effect for the built-in color cycling (Rest+)
 - turn rest plus on and off
 - turn clock on and off and adjust brightness (Rest+ 2nd gen/Restore 3) 
 - full clock display control - separate day/night brightness, clock mode (Always On / Off at Night / Always Off), on/off schedule times, and tap-to-show (Restore 5)
