@@ -64,8 +64,9 @@ class LightRestEntity(HatchEntity, LightEntity):
         if ATTR_EFFECT in kwargs:
             random_mode = kwargs[ATTR_EFFECT] == EFFECT_RAINBOW
         else:
-            # Keep current random state if effect not specified
-            random_mode = self.rest_device.color_random
+            # Keep current random state if effect not specified, coercing the
+            # None we get before the first state arrives into a real bool
+            random_mode = bool(self.rest_device.color_random)
 
         _LOGGER.debug(f"turning on light to {rgb} with {brightness}, random={random_mode}")
         self.rest_device.set_color(rgb[0], rgb[1], rgb[2], brightness, random=random_mode)
